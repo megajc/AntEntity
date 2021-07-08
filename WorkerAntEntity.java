@@ -207,7 +207,7 @@ public class WorkerAntEntity extends AnimalEntity implements IAngerable{
         }
 
         protected double getAttackReachSqr(LivingEntity p_179512_1_) {
-            return (double)(4.0F + p_179512_1_.getBbWidth());
+            return (double)(this.mob.getBbWidth() * 2.0F * this.mob.getBbWidth() * 2.0F + p_179512_1_.getBbWidth());
         }
     }
 }
