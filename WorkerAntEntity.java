@@ -1,5 +1,3 @@
-package com.giner.modginer.entities;
-
 import com.giner.modginer.init.ModEntityClass;
 import net.minecraft.block.*;
 import net.minecraft.entity.*;
@@ -24,7 +22,7 @@ import net.minecraft.world.server.ServerWorld;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public class WorkerAntEntity extends AnimalEntity implements IAngerable{
+public class WorkerAntEntity extends AnimalEntity implements IAngerable {
 
 
     private static final DataParameter<Integer> HONEY = EntityDataManager.defineId(WorkerAntEntity.class, DataSerializers.INT);
@@ -69,7 +67,7 @@ public class WorkerAntEntity extends AnimalEntity implements IAngerable{
     @Override
     public void readAdditionalSaveData(CompoundNBT compound) {
         super.readAdditionalSaveData(compound);
-        if (compound.contains("HONEY")){
+        if (compound.contains("HONEY")) {
             this.setHoney(compound.getInt("HONEY"));
         }
     }
@@ -80,31 +78,28 @@ public class WorkerAntEntity extends AnimalEntity implements IAngerable{
         compound.putInt("HONEY", this.getHoney());
     }
 
-    public int getHoney(){
+    public int getHoney() {
         return this.getEntityData().get(HONEY);
     }
 
-    public void addHoney(){
+    public void addHoney() {
         this.getEntityData().set(HONEY, (this.getEntityData().get(HONEY) + 1));
     }
 
-    public void restHoney(){
+    public void restHoney() {
         this.getEntityData().set(HONEY, (this.getEntityData().get(HONEY) - 1));
     }
 
-    public void setHoney(int hon){
+    public void setHoney(int hon) {
         this.getEntityData().set(HONEY, (hon));
     }
 
     @Override
     public ActionResultType mobInteract(PlayerEntity pl, Hand hand) {
         ItemStack item = pl.getItemInHand(Hand.MAIN_HAND);
-        if (!this.isBaby() && pl.getItemInHand(Hand.MAIN_HAND).getItem().equals(Items.SUGAR)){
+        if (!this.isBaby() && pl.getItemInHand(Hand.MAIN_HAND).getItem().equals(Items.SUGAR)) {
             this.addHoney();
-            if (this.random.nextBoolean()){
-                this.addHoney();
-            }
-            if (this.getHoney() > 5){
+            if (this.getHoney() > 5) {
                 this.setHoney(5);
             } else {
                 this.playSound(SoundEvents.HORSE_EAT, 0.15F, 1.0F);
@@ -114,13 +109,13 @@ public class WorkerAntEntity extends AnimalEntity implements IAngerable{
                     return ActionResultType.CONSUME;
                 }
             }
-        } else if (!this.isBaby() && pl.getItemInHand(Hand.MAIN_HAND).getItem().equals(Items.GLASS_BOTTLE) && this.getHoney() > 0){
+        } else if (!this.isBaby() && pl.getItemInHand(Hand.MAIN_HAND).getItem().equals(Items.GLASS_BOTTLE) && this.getHoney() > 0) {
             this.restHoney();
             this.usePlayerItem(pl, item);
             this.playSound(SoundEvents.BOTTLE_FILL, 0.15F, 1.0F);
             pl.addItem(Items.HONEY_BOTTLE.getDefaultInstance());
             return ActionResultType.CONSUME;
-        } else{
+        } else {
             super.mobInteract(pl, hand);
         }
         return ActionResultType.sidedSuccess(this.level.isClientSide);
@@ -138,7 +133,7 @@ public class WorkerAntEntity extends AnimalEntity implements IAngerable{
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return SoundEvents.STONE_BREAK ;
+        return SoundEvents.STONE_BREAK;
     }
 
     @Override
@@ -160,13 +155,16 @@ public class WorkerAntEntity extends AnimalEntity implements IAngerable{
 
     @Override
     public boolean doHurtTarget(Entity p_70652_1_) {
-        boolean flag = p_70652_1_.hurt(DamageSource.mobAttack(this), (float)((int)this.getAttributeValue(Attributes.ATTACK_DAMAGE)));
+        boolean flag = super.doHurtTarget(p_70652_1_);
         if (flag) {
-            this.doEnchantDamageEffects(this, p_70652_1_);
+            float f = this.level.getCurrentDifficultyAt(this.blockPosition()).getEffectiveDifficulty();
+            if (this.getMainHandItem().isEmpty() && this.isOnFire() && this.random.nextFloat() < f * 0.3F) {
+                p_70652_1_.setSecondsOnFire(2 * (int) f);
+            }
         }
-
         return flag;
     }
+
 
     @Override
     public int getRemainingPersistentAngerTime() {
@@ -189,6 +187,8 @@ public class WorkerAntEntity extends AnimalEntity implements IAngerable{
     public void startPersistentAngerTimer() {
         this.setRemainingPersistentAngerTime(PERSISTENT_ANGER_TIME.randomValue(this.random));
     }
+
+
 
     //GOALS/////////////////////////////////////////
     class MeleeAttackGoal extends net.minecraft.entity.ai.goal.MeleeAttackGoal {
